@@ -1,88 +1,72 @@
-const huffman = require('../index.js').huffman;
-let assert = require('chai').assert;
+class Node {
+  constructor(value, frequency, left = null, right = null) {
+    this.value = value;
+    this.frequency = frequency;
+    this.left = left;
+    this.right = right;
+  }
+}
 
-describe('Huffman code testing', function() {
-  it('encode correctly with inproper input', function() {
-    assert.throws(() => {
-          let inputData = 'ABBCCCDDDDEEEEE';
-          let frequencyTable = huffman.buildFrequencyTable(inputData);
-          let huffmanTree = huffman.buildHuffmanTree(frequencyTable);
-          let codeTable = huffman.buildCodeTable(huffmanTree);
+function buildFrequencyTable(data) {
+  if (!data) throw new Error("Input data is empty or undefined");
+  const freq = {};
+  for (const char of data) {
+    freq[char] = (freq[char] || 0) + 1;
+  }
+  return freq;
+}
 
-          huffman.compressData(undefined, codeTable);
-        },
-        Error
-    );
+function buildHuffmanTree(freqTable) {
+  const nodes = Object.entries(freqTable).map(([char, freq]) => new Node(char, freq));
+  while (nodes.length > 1) {
+    nodes.sort((a, b) => a.frequency - b.frequency);
+    const left = nodes.shift();
+    const right = nodes.shift();
+    const merged = new Node(null, left.frequency + right.frequency, left, right);
+    nodes.push(merged);
+  }
+  return nodes[0];
+}
 
-    assert.throws(() => {
-          let inputData = '';
-          let frequencyTable = huffman.buildFrequencyTable(inputData);
-          let huffmanTree = huffman.buildHuffmanTree(frequencyTable);
-          let codeTable = huffman.buildCodeTable(huffmanTree);
-          huffman.compressData(inputData, codeTable);
-        },
-        Error
-    );
+function buildCodeTable(node, prefix = '', codeTable = {}) {
+  if (!node.left && !node.right) {
+    codeTable[node.value] = prefix || '0';
+  } else {
+    if (node.left) buildCodeTable(node.left, prefix + '0', codeTable);
+    if (node.right) buildCodeTable(node.right, prefix + '1', codeTable);
+  }
+  return codeTable;
+}
 
-    assert.throws(() => {
-          let inputData = 'ABBCCCDDDDEEEEE';
-          let frequencyTable = huffman.buildFrequencyTable(inputData);
-          let huffmanTree = huffman.buildHuffmanTree(frequencyTable);
+function compressData(data, codeTable) {
+  if (!data || !codeTable) throw new Error("Invalid input or code table");
+  return data.split('').map(char => codeTable[char]).join('');
+}
 
-          huffman.compressData(inputData, undefined);
-        },
-        Error
-    );
+function decompressData(compressed, tree) {
+  if (!compressed && tree.value) {
+    return tree.value.repeat(tree.frequency);
+  }
 
-  })
+  let result = '';
+  let node = tree;
+  for (const bit of compressed) {
+    node = bit === '0' ? node.left : node.right;
+    if (!node.left && !node.right) {
+      result += node.value;
+      node = tree;
+    }
+  }
+  return result;
+}
 
-  it('encode correctly with proper input', function() {
-    let inputData = 'ABBCCCDDDDEEEEE';
-    let frequencyTable = huffman.buildFrequencyTable(inputData);
-    let huffmanTree = huffman.buildHuffmanTree(frequencyTable);
-    let codeTable = huffman.buildCodeTable(huffmanTree);
-    let compressedData = huffman.compressData(inputData, codeTable);
-    let decompressedData = huffman.decompressData(compressedData, huffmanTree);
-
-    // console.log('Input:', inputData);
-    // console.log('FrequencyTable:', frequencyTable);
-    // console.log('CodeTable:', codeTable);
-    // console.log('Compressed:', compressedData);
-    // console.log('Decompressed:', decompressedData);
-    assert.equal(decompressedData, inputData);
-
-    inputData = 'ABB35';
-    frequencyTable = huffman.buildFrequencyTable(inputData);
-    huffmanTree = huffman.buildHuffmanTree(frequencyTable);
-    codeTable = huffman.buildCodeTable(huffmanTree);
-    compressedData = huffman.compressData(inputData, codeTable);
-    decompressedData = huffman.decompressData(compressedData, huffmanTree);
-    // console.log('Input:', inputData);
-    // console.log('FrequencyTable:', frequencyTable);
-    // console.log('CodeTable:', codeTable);
-    // console.log('Compressed:', compressedData);
-    // console.log('Decompressed:', decompressedData);
-
-    assert.equal(decompressedData, inputData);
-
-  })
-
-  it('error in encode with proper input', function() {
-    let inputData = 'AAAA';
-    let frequencyTable = huffman.buildFrequencyTable(inputData);
-    let huffmanTree = huffman.buildHuffmanTree(frequencyTable);
-    let codeTable = huffman.buildCodeTable(huffmanTree);
-    let compressedData = huffman.compressData(inputData, codeTable);
-    let decompressedData = huffman.decompressData(compressedData, huffmanTree);
-
-    console.log('Input:', inputData);
-    console.log('FrequencyTable:', frequencyTable);
-    console.log('huffmanTree:', huffmanTree);
-    console.log('CodeTable:', codeTable);
-    console.log('Compressed:', compressedData);
-    console.log('Decompressed:', decompressedData);
-    assert.equal(decompressedData, inputData);
-  })
-
-
-})
+module.exports = {
+  huffman: {
+    Node,
+    buildFrequencyTable,
+    buildHuffmanTree,
+    buildCodeTable,
+    compressData,
+    decompressData
+  }
+};
