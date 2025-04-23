@@ -89,6 +89,19 @@ class HuffmanCode {
 
         return decompressedData;
     }
+
+        /**
+     * Обчислює коефіцієнт стиснення
+     * @param {string} originalData - Нестиснені дані (рядок)
+     * @param {string} compressedData - Стиснені дані у вигляді бітів (рядок)
+     * @returns {number} Коефіцієнт стиснення = originalSize / compressedSize*/
+     
+        static calculateCompressionRatio(originalData, compressedData) {
+            const originalSize = originalData.length * 8;
+            const compressedSize = compressedData.length;
+            return originalSize / compressedSize;
+        }
+    
 }
 
 module.exports = HuffmanCode;

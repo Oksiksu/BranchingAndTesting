@@ -64,6 +64,18 @@ class HammingCode {
 
     return [dataToDecode[2], dataToDecode[4], dataToDecode[5], dataToDecode[6]];
   }
+
+    /** Обчислює кількість надлишкових бітів для m інформаційних бітів за умовою: 2^r >= m + r + 1
+     * @param {number} m - Кількість інформаційних бітів
+     * @returns {number} r - Мінімальна кількість надлишкових бітів */
+
+    static calculateRedundantBitsCount(m) {
+      let r = 0;
+      while (Math.pow(2, r) < m + r + 1) {
+        r++;
+      }
+      return r;
+    }
 }
 
 module.exports = HammingCode;
