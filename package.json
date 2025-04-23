@@ -4,9 +4,7 @@
     "mocha": "^8.4.0"
   },
   "scripts": {
-    "test": "mocha test/test.js",
-    "testHamming": "mocha test/hammingTest.js",
-    "testHuffman": "mocha test/huffmanTest.js"
+    "test": "mocha \"test/**/*.js\""
   },
   "name": "lab6",
   "description": "To teach branching best practices and QA automation basics",
